@@ -1,28 +1,28 @@
 services:
   mongodb:
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongodb-pt
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
-      - mongo-data:/data/db
+      - mongo-data-pt:/data/db
     networks:
-      - corretora-network
+      - corretora-pt-network
 
   backend:
     build:
       context: ./Back-corretora
-    container_name: backend-api
+    container_name: backend-api-pt
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/trading
-      - FRONTEND_URL=${FRONTEND_URL:-https://brokerblackpearl.com.br}
-      - API_URL=${API_URL:-https://brokerblackpearl.com.br/server-api}
+      - FRONTEND_URL=${FRONTEND_URL:-https://blackpearlbroker.com}
+      - API_URL=${API_URL:-https://blackpearlbroker.com/server-api}
     depends_on:
       - mongodb
     networks:
-      - corretora-network
+      - corretora-pt-network
 
   frontend:
     build:
@@ -32,34 +32,17 @@ services:
         - NEXT_PUBLIC_WS_URL=/ws
     environment:
       - INTERNAL_API_URL=http://backend:8080
-    container_name: frontend-next
+    container_name: frontend-next-pt
     ports:
-      - "3000:3000"
+      - "3001:3000"
     depends_on:
       - backend
     networks:
-      - corretora-network
-
-  nginx:
-    image: nginx:latest
-    container_name: reverse-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      # SSL Certificates from the Host (VPS)
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - corretora-network
+      - corretora-pt-network
 
 networks:
-  corretora-network:
+  corretora-pt-network:
     driver: bridge
 
 volumes:
-  mongo-data:
+  mongo-data-pt:
